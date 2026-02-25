@@ -1,0 +1,10 @@
+{
+  "ottawa_budget": {
+    "data_url": "https://www.arcgis.com/sharing/rest/content/items/e88c52d7727e4a9dba6d427c9bd6445c/data",
+    "dataset_name": "2026 Draft Budget Explorer",
+    "description": "City of Ottawa Draft Budget Data"
+  },
+  "data_source": {
+    "timeout": 60000
+  }
+}

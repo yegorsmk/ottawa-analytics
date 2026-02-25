@@ -1,7 +1,0 @@
-logging:
-  level: "info"
-  file: "app.log"
-
-ottawa_311:
-  api_endpoint: "https://services1.arcgis.com/UWYHeuuJISiGmgXx/ArcGIS/rest/services/Prod_311CustomerServiceRequests/FeatureServer/0/query"
-  

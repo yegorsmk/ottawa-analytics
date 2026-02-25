@@ -1,11 +1,24 @@
 {
   "name": "ottawa_analytics",
   "version": "1.0.0",
+  "description": "ETL pipeline with REST API for analyzing City of Ottawa budget data",
+  "type": "module",
   "main": "index.js",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
+    "etl": "node run-etl.js",
+    "api": "node run-api.js",
+    "visualize": "node visualize-budget.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
-  "description": ""
+  "dependencies": {
+    "adm-zip": "^0.5.10",
+    "cors": "^2.8.5",
+    "csv-parse": "^5.5.6",
+    "express": "^4.19.0"
+  }
 }
