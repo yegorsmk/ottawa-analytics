@@ -1,5 +1,5 @@
-import { writeFileSync, mkdirSync } from 'fs';
-import { join, basename } from 'path';
+import { writeFileSync, mkdirSync, writeFile } from 'fs';
+import path from 'path';
 import AdmZip from 'adm-zip';
 import { loadConfig, getDataPaths } from '../utils/configLoader.js';
 
@@ -32,10 +32,31 @@ export class DataExtractor {
             }
 
             const arrayBuffer = await response.arrayBuffer();
-            bufer = Buffer.from(arrayBuffer);
+            buffer = Buffer.from(arrayBuffer);
         } catch (err) {
             throw new Error(`Download failed: ${err.message}`);
         }
+
+        const extractedFiles = [];
+        try {
+            const zip = new AdmZip(buffer);
+            const zipEntries = zip.getEntries();
+            for (entry in zipEntries) {
+                const fileName = path.basename(entry.entryName);
+                const outputPath = path.join(this.data_paths.raw, fileName);
+
+                const csvContent = entry.getData().toString('utf-8');
+                writeFileSync(outputPath, csvContent, 'utf-8');
+                extractedFiles.push(outputPath);
+
+            }
+        } catch (err) {
+            throw new Error(`ZIP extraction failed: ${err.message}`);
+        }
+
+        console.log(`Successfully extracted ${extractedFiles.length} files`);
+        return extractedFiles;
+
     }
 
 }
