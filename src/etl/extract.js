@@ -1,17 +1,13 @@
-import { writeFileSync, mkdirSync, writeFile } from 'fs';
-import path from 'path';
+import { writeFileSync, mkdirSync } from 'fs';
+import { path } from 'path';
 import AdmZip from 'adm-zip';
 import { loadConfig, getDataPaths } from '../utils/configLoader.js';
 
 export class DataExtractor {
     constructor(config = null) {
-        try { 
         this.config = config || loadConfig;
         this.data_paths = getDataPaths;
         mkdirSync(this.data_paths.raw, {recursive: true})
-        } catch (err) {
-            throw new Error(`Data extractor init failed: ${err.message}`);
-        }
     }
 
     async extractOttawaBudgetData() {
@@ -41,14 +37,17 @@ export class DataExtractor {
         try {
             const zip = new AdmZip(buffer);
             const zipEntries = zip.getEntries();
-            for (entry in zipEntries) {
-                const fileName = path.basename(entry.entryName);
-                const outputPath = path.join(this.data_paths.raw, fileName);
 
-                const csvContent = entry.getData().toString('utf-8');
-                writeFileSync(outputPath, csvContent, 'utf-8');
-                extractedFiles.push(outputPath);
+            for (const entry of zipEntries) {
+                if (entry.entryName.endsWith('.csv')) {
 
+                    const fileName = path.basename(entry.entryName);
+                    const outputPath = path.join(this.data_paths.raw, fileName);
+
+                    const csvContent = entry.getData().toString('utf-8');
+                    writeFileSync(outputPath, csvContent, 'utf-8');
+                    extractedFiles.push(outputPath);
+                }
             }
         } catch (err) {
             throw new Error(`ZIP extraction failed: ${err.message}`);
@@ -56,7 +55,6 @@ export class DataExtractor {
 
         console.log(`Successfully extracted ${extractedFiles.length} files`);
         return extractedFiles;
-
     }
 
 }
