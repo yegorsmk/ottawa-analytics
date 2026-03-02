@@ -14,7 +14,7 @@ export function loadConfig(configPath=null) {
         if (configPath === null) {
             // root directory (src/utils -> src -> root)
             const projectRoot = path.join(__dirname, '..', '..');
-            configPath = path.join(projectRoot, 'config', 'config.yaml');
+            configPath = path.join(projectRoot, 'config', 'config.json');
         }
 
         const fileContents = fs.readFileSync(configPath, 'utf8');
@@ -34,8 +34,8 @@ export function getDataPaths() {
     const projectRoot = path.join(__dirname, '..', '..');
 
     const paths = {
-        rawData: path.join(projectRoot, 'data', 'raw'),
-        processedData: path.join(projectRoot, 'data', 'processed'),
+        raw: path.join(projectRoot, 'data', 'raw'),
+        processed: path.join(projectRoot, 'data', 'processed'),
         exports: path.join(projectRoot, 'data', 'exports'),
     };
 

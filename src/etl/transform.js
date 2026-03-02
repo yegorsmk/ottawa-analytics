@@ -1,14 +1,14 @@
 import path, { basename } from 'path';
 import { parse } from 'csv-parse/sync';
-import { loadConfig, getDataPaths } from '../utils/configLoader';
+import { loadConfig, getDataPaths } from '../utils/configLoader.js';
 import { writeFileSync, mkdirSync, readFileSync } from 'fs';
 import { stringify } from 'csv-stringify/sync';
 
-class DataTransformers {
+export class DataTransformer {
     constructor (config = null) {
-        this,config = config || loadConfig();
+        this.config = config || loadConfig();
         this.dataPaths = getDataPaths();
-        mkdirSync(this.dataPaths.processedData, { recursive: true });
+        mkdirSync(this.dataPaths.processed, { recursive: true });
     }
 
     async transform(inputFiles) {
@@ -18,12 +18,14 @@ class DataTransformers {
             try { 
                 console.log(`Processing: ${basename(file)}`);
 
+                // Read and parse CSV into JS objects
                 const rawContent = readFileSync(file, 'utf-8');
                 const records = parse(rawContent, {
                     columns: true,
                     skip_empty_lines: true,
                 });
 
+                // Normalize column names (lowercase, spaces to underscores)
                 const headers = Object.keys(records[0]);
                 const normalizedHeaders = headers.map(h => h.toLowerCase().replace(/\s+/g, '_'));
 
@@ -35,6 +37,7 @@ class DataTransformers {
                     return newRow;
                 });
 
+                // Remove duplicates
                 const initialCount = normalized.length;
                 const seen = new Set();
                 const deduplicated = normalized.filter(row => {
@@ -48,7 +51,8 @@ class DataTransformers {
                 console.log(`Removed ${initialCount - deduplicated.length} duplicate items`);
                 }
 
-                const outputPath = path.join(this.dataPaths.processedData, basename(file));
+                // Save processed file
+                const outputPath = path.join(this.dataPaths.processed, basename(file));
                 writeFileSync(outputPath, stringify(deduplicated, { header: true }), 'utf-8');
 
                 processedFiles.push(outputPath);

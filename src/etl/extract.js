@@ -1,27 +1,27 @@
 import { writeFileSync, mkdirSync } from 'fs';
-import { path } from 'path';
+import { join, basename } from 'path';
 import AdmZip from 'adm-zip';
 import { loadConfig, getDataPaths } from '../utils/configLoader.js';
 
 export class DataExtractor {
     constructor(config = null) {
-        this.config = config || loadConfig;
-        this.data_paths = getDataPaths;
+        this.config = config || loadConfig();
+        this.data_paths = getDataPaths();
         mkdirSync(this.data_paths.raw, {recursive: true})
     }
 
     async extractOttawaBudgetData() {
-        url = self.config.ottawa_budget.data_url;
-        timeout = self.config.data_source.timeout;
+        const url = this.config.ottawa_budget.data_url;
+        const timeout = this.config.data_source.timeout;
 
         console.log(`Downloading data form ${url}`);
 
         let buffer;
         try {
-            const controller = new AbortController;
+            const controller = new AbortController();
             const timer = setTimeout(() => controller.abort(), timeout);
             const response = await fetch(url, { signal: controller.signal});
-            clearTimeout(timeout);
+            clearTimeout(timer);
 
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`)
@@ -41,8 +41,8 @@ export class DataExtractor {
             for (const entry of zipEntries) {
                 if (entry.entryName.endsWith('.csv')) {
 
-                    const fileName = path.basename(entry.entryName);
-                    const outputPath = path.join(this.data_paths.raw, fileName);
+                    const fileName = basename(entry.entryName);
+                    const outputPath = join(this.data_paths.raw, fileName);
 
                     const csvContent = entry.getData().toString('utf-8');
                     writeFileSync(outputPath, csvContent, 'utf-8');
