@@ -17,7 +17,7 @@ export class DataLoader {
 
         for (const srcPath of processedFiles) {
             try {
-                const dstPath = join(self.dataPaths.exports, basename(srcPath));
+                const dstPath = join(this.dataPaths.exports, basename(srcPath));
                 copyFileSync(srcPath, dstPath);
                 console.log(`Exported: ${basename(srcPath)}`);
                 exported.push(dstPath);
@@ -34,7 +34,7 @@ export class DataLoader {
             total_files: 0,
         };
 
-        for (const file of processed_files) {
+        for (const file of processedFiles) {
             try {
                 const content = readFileSync(file, 'utf-8');
                 const records = parse(content, {
@@ -58,5 +58,4 @@ export class DataLoader {
         return summary;
     }
 
-    
 }
