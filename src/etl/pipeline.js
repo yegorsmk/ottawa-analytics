@@ -1,13 +1,13 @@
-import { DataLoader } from "./load";
-import { DataTransformer } from "./transform";
-import { DataExtractor } from "./extract";
-import { loadConfig } from "../utils/configLoader";
+import { DataLoader } from "./load.js";
+import { DataTransformer } from "./transform.js";
+import { DataExtractor } from "./extract.js";
+import { loadConfig } from "../utils/configLoader.js";
 
 export class ELTPipeline {
     constructor(config = null) {
         this.config = config || loadConfig();
         this.extractor = new DataExtractor(this.config);
-        this.transformer = new DataExtractor(this.config);
+        this.transformer = new DataTransformer(this.config);
         this.loader = new DataLoader(this.config);
     }
 
