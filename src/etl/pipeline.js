@@ -3,7 +3,7 @@ import { DataTransformer } from "./transform.js";
 import { DataExtractor } from "./extract.js";
 import { loadConfig } from "../utils/configLoader.js";
 
-export class ELTPipeline {
+export class ETLPipeline {
     constructor(config = null) {
         this.config = config || loadConfig();
         this.extractor = new DataExtractor(this.config);

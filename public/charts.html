@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ottawa Budget Analytics</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f7fa;
+      color: #333;
+    }
+ 
+    header {
+      background: #1a3a5c;
+      color: white;
+      padding: 24px 32px;
+    }
+ 
+    header h1 { font-size: 24px; font-weight: 600; }
+    header p { font-size: 14px; opacity: 0.8; margin-top: 4px; }
+ 
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      padding: 32px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+ 
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+ 
+    .card.full-width { grid-column: 1 / -1; }
+ 
+    .card h2 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #1a3a5c;
+      margin-bottom: 16px;
+    }
+ 
+    canvas { max-height: 350px; }
+  </style>
+</head>
+<body>
+ 
+  <header>
+    <h1>Ottawa Budget Analytics</h1>
+    <p>2026 Draft Budget Explorer</p>
+  </header>
+ 
+  <div class="grid">
+    <div class="card full-width">
+      <h2>Expenditure by Committee (2026)</h2>
+      <canvas id="expenditureChart"></canvas>
+    </div>
+    <div class="card full-width">
+      <h2>Budget Comparison: 2025 vs 2026</h2>
+      <canvas id="comparisonChart"></canvas>
+    </div>
+    <div class="card">
+      <h2>Capital Program by Service Category (2026)</h2>
+      <canvas id="categoryChart"></canvas>
+    </div>
+    <div class="card">
+      <h2>Capital Program by Funding Source (2026)</h2>
+      <canvas id="fundingChart"></canvas>
+    </div>
+    <div class="card full-width">
+      <h2>Property Tax Rate Comparison (Latest Year)</h2>
+      <canvas id="cityChart"></canvas>
+    </div>
+  </div>
+ 
+  <script>
+    const BASE = window.location.origin;
+ 
+    const COLORS = [
+      '#1a3a5c', '#2e6da4', '#4a9fd4', '#74c0e8', '#a8d8f0',
+      '#c0392b', '#e67e22', '#f1c40f', '#2ecc71', '#9b59b6'
+    ];
+ 
+    // Fetch a CSV file from the API and parse it into an array of objects
+    async function fetchCsv(filename) {
+      const res = await fetch(`${BASE}/api/data/${filename}`);
+      const text = await res.text();
+      const lines = text.trim().split('\n');
+      const headers = lines[0].split(',');
+      return lines.slice(1).map(line => {
+        const values = line.split(',');
+        const row = {};
+        headers.forEach((h, i) => row[h.trim()] = values[i]?.trim() ?? '');
+        return row;
+      });
+    }
+ 
+    // Chart 1: Expenditure by committee (2026)
+    async function drawExpenditure() {
+      const rows = await fetchCsv('1_Operating_overview_expenditure.csv');
+      const data = rows
+        .filter(r => r.year === '2026')
+        .sort((a, b) => parseFloat(a.total) - parseFloat(b.total));
+ 
+      new Chart(document.getElementById('expenditureChart'), {
+        type: 'bar',
+        data: {
+          labels: data.map(r => r.committee),
+          datasets: [{
+            label: '2026 Budget ($ Millions)',
+            data: data.map(r => (parseFloat(r.total) / 1000000).toFixed(1)),
+            backgroundColor: '#2e6da4',
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          plugins: { legend: { display: false } },
+          scales: { x: { title: { display: true, text: 'Budget ($ Millions)' } } }
+        }
+      });
+    }
+ 
+    // Chart 2: 2025 vs 2026 budget comparison
+    async function drawComparison() {
+      const rows = await fetchCsv('1_Operating_overview_expenditure.csv');
+      const committees = [...new Set(rows.map(r => r.committee))];
+ 
+      const get = (committee, year) => {
+        const row = rows.find(r => r.committee === committee && r.year === String(year));
+        return row ? (parseFloat(row.total) / 1000000).toFixed(1) : 0;
+      };
+ 
+      new Chart(document.getElementById('comparisonChart'), {
+        type: 'bar',
+        data: {
+          labels: committees,
+          datasets: [
+            { label: '2025', data: committees.map(c => get(c, 2025)), backgroundColor: '#4a9fd4' },
+            { label: '2026', data: committees.map(c => get(c, 2026)), backgroundColor: '#c0392b' }
+          ]
+        },
+        options: {
+          scales: {
+            x: { title: { display: true, text: 'Committee' } },
+            y: { title: { display: true, text: 'Budget ($ Millions)' } }
+          }
+        }
+      });
+    }
+ 
+    // Chart 3: Capital by service category (pie)
+    async function drawCategory() {
+      const rows = await fetchCsv('2_Capital_program_by_service_category.csv');
+      const data = rows.filter(r => r.year === '2026');
+ 
+      new Chart(document.getElementById('categoryChart'), {
+        type: 'pie',
+        data: {
+          labels: data.map(r => r.service_category),
+          datasets: [{
+            data: data.map(r => parseFloat(r.total)),
+            backgroundColor: COLORS,
+          }]
+        },
+        options: { plugins: { legend: { position: 'right' } } }
+      });
+    }
+ 
+    // Chart 4: Capital by funding source
+    async function drawFunding() {
+      const rows = await fetchCsv('2_Capital_program_by_funding_src.csv');
+      const data = rows
+        .filter(r => r.year === '2026')
+        .sort((a, b) => parseFloat(a.total) - parseFloat(b.total));
+ 
+      new Chart(document.getElementById('fundingChart'), {
+        type: 'bar',
+        data: {
+          labels: data.map(r => r.funding_source),
+          datasets: [{
+            label: '2026 Capital ($ Millions)',
+            data: data.map(r => (parseFloat(r.total) / 1000000).toFixed(1)),
+            backgroundColor: '#2ecc71',
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          plugins: { legend: { display: false } },
+          scales: { x: { title: { display: true, text: 'Budget ($ Millions)' } } }
+        }
+      });
+    }
+ 
+    // Chart 5: City tax rate comparison (Ottawa highlighted)
+    async function drawCityComparison() {
+      const rows = await fetchCsv('6_How_city_compares.csv');
+      const latestYear = Math.max(...rows.map(r => parseInt(r.date)));
+      const data = rows
+        .filter(r => parseInt(r.date) === latestYear)
+        .sort((a, b) => parseFloat(a.value) - parseFloat(b.value));
+ 
+      new Chart(document.getElementById('cityChart'), {
+        type: 'bar',
+        data: {
+          labels: data.map(r => r.city),
+          datasets: [{
+            label: 'Tax Rate (%)',
+            data: data.map(r => parseFloat(r.value)),
+            backgroundColor: data.map(r => r.city === 'Ottawa' ? '#c0392b' : '#2e6da4'),
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          plugins: { legend: { display: false } },
+          scales: { x: { title: { display: true, text: 'Tax Rate (%)' } } }
+        }
+      });
+    }
+ 
+    // Run all charts
+    Promise.all([
+      drawExpenditure(),
+      drawComparison(),
+      drawCategory(),
+      drawFunding(),
+      drawCityComparison(),
+    ]).catch(err => console.error('Chart error:', err));
+  </script>
+ 
+</body>
+</html>
+ 
