@@ -36,13 +36,13 @@ data/exports/       ← Final files served by the API
 
 ## Features
 
-- ✅ Downloads ZIP from Ottawa Open Data Portal
-- ✅ Extracts 9 CSV files
-- ✅ Normalizes column names (lowercase, underscores)
-- ✅ Removes duplicate records
-- ✅ REST API for data access
-- ✅ Interactive browser charts (no dependencies)
-- ✅ Power BI ready
+- Downloads ZIP from Ottawa Open Data Portal
+- Extracts 9 CSV files
+- Normalizes column names (lowercase, underscores)
+- Removes duplicate records
+- REST API for data access
+- Interactive browser charts (no dependencies)
+- Power BI ready
 
 ## Requirements
 
@@ -62,7 +62,7 @@ node run-etl.js
 node run-api.js
 
 # 4. Open charts in browser
-# http://localhost:5551/charts.html
+# http://localhost:3535/charts.html
 ```
 
 ## Project Structure
@@ -129,13 +129,13 @@ node run-api.js
 
 ```bash
 # Run ETL
-curl http://localhost:5551/api/run-etl
+curl http://localhost:3535/api/run-etl
 
 # List files
-curl http://localhost:5551/api/data/files
+curl http://localhost:3535/api/data/files
 
 # Download a file
-curl http://localhost:5551/api/data/1_Operating_overview_expenditure.csv -o expenditure.csv
+curl http://localhost:3535/api/data/1_Operating_overview_expenditure.csv -o expenditure.csv
 ```
 
 ## Charts
@@ -143,7 +143,7 @@ curl http://localhost:5551/api/data/1_Operating_overview_expenditure.csv -o expe
 Make sure the API server is running and ETL has been run at least once, then open:
 
 ```
-http://localhost:5551/charts.html
+http://localhost:3535/charts.html
 ```
 
 Charts included:
@@ -156,14 +156,14 @@ Charts included:
 ## Power BI Integration
 
 1. Start API server: `node run-api.js`
-2. List available files: `http://localhost:5551/api/data/files`
+2. List available files: `http://localhost:3535/api/data/files`
 3. In Power BI: **Get Data → Web**
-4. URL: `http://localhost:5551/api/data/<filename>`
+4. URL: `http://localhost:3535/api/data/<filename>`
 
 With ngrok (remote access):
 
 ```bash
-ngrok http 5551
+ngrok http 3535
 ```
 
 Then use:
